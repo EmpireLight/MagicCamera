@@ -53,6 +53,14 @@ public class TextureRotationUtil {
     
     private TextureRotationUtil() {}
 
+    /**
+     * flipVertical 为true就是将纹理对应的Y坐标翻转
+     * flipHorizontal 为true就是将纹理对应的X坐标饭庄
+     * @param rotation
+     * @param flipHorizontal
+     * @param flipVertical
+     * @return
+     */
     public static float[] getRotation(final Rotation rotation, final boolean flipHorizontal,
                                                          final boolean flipVertical) {
         float[] rotatedTex;
@@ -89,7 +97,6 @@ public class TextureRotationUtil {
         }
         return rotatedTex;
     }
-
 
     private static float flip(final float i) {
         if (i == 0.0f) {

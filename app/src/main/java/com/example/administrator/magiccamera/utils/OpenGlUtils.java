@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.util.Log;
+import android.widget.TabHost;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class OpenGlUtils {
             1.0f, 1.0f,
     };
 
-    public static int loadProgram(String vertexSource, String fragmentSource) {
+    public static int createProgram(String vertexSource, String fragmentSource) {
         int vertextShader;
         int fragmentShader;
         int programId;
@@ -56,12 +57,15 @@ public class OpenGlUtils {
             Log.e("Load Program", "Fragment Shader Failed");
             return 0;
         }
-        // 创建着色器程序
+
+        /**创建着色器程序*/
         programId = GLES20.glCreateProgram();
-        // 向程序中加入顶点着色器
+
+        /**向程序中加入顶点着色器*/
         GLES20.glAttachShader(programId, vertextShader);
         GLES20.glAttachShader(programId, fragmentShader);
-        // 链接程序
+
+        /**链接shader到程序*/
         GLES20.glLinkProgram(programId);
         GLES20.glGetProgramiv(programId, GLES20.GL_LINK_STATUS, link, 0);
         if (link[0] <= 0) {
@@ -69,6 +73,7 @@ public class OpenGlUtils {
             return 0;
         }
 
+        /**链接shader到program后就可以删掉shader了*/
         GLES20.glDeleteShader(vertextShader);
         GLES20.glDeleteShader(fragmentShader);
         return programId;
@@ -107,18 +112,35 @@ public class OpenGlUtils {
         return image;
     }
 
-    public static int getExternalOESTextureID(){
+    public static int loadExternalOESTextureID(){
         int[] texture = new int[1];
         GLES20.glGenTextures(1, texture, 0);
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texture[0]);
-        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                GL10.GL_TEXTURE_MIN_FILTER,GL10.GL_LINEAR);
-        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
-        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
+
+        /**设置缩小过滤为使用纹理中坐标最接近的一个像素的颜色作为需要绘制的像素颜色*/
+        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL10.GL_TEXTURE_MIN_FILTER,GL10.GL_LINEAR);
+        /**设置放大过滤为使用纹理中坐标最接近的若干个颜色，通过加权平均算法得到需要绘制的像素颜色*/
+        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+        /**设置环绕方向S，截取纹理坐标到[1/2n,1-1/2n]。将导致永远不会与border融合*/
+        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
+        /**设置环绕方向T，截取纹理坐标到[1/2n,1-1/2n]。将导致永远不会与border融合*/
+        GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
+        return texture[0];
+    }
+
+    public static int loadNormalTextureID() {
+        int[] texture = new int[1];
+        GLES20.glGenTextures(1, texture, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
+
+        /**设置缩小过滤为使用纹理中坐标最接近的一个像素的颜色作为需要绘制的像素颜色*/
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER,GL10.GL_LINEAR);
+        /**设置放大过滤为使用纹理中坐标最接近的若干个颜色，通过加权平均算法得到需要绘制的像素颜色*/
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+        /**设置环绕方向S，截取纹理坐标到[1/2n,1-1/2n]。将导致永远不会与border融合*/
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
+        /**设置环绕方向T，截取纹理坐标到[1/2n,1-1/2n]。将导致永远不会与border融合*/
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
         return texture[0];
     }
 

@@ -1,5 +1,6 @@
 package com.example.administrator.magiccamera.camera;
 
+import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.util.Log;
@@ -18,16 +19,19 @@ import java.util.List;
 public class CameraEngine {
     private static final String TAG = "CameraEngine";
 
-    private static Camera mCamera = null;
-    private static int cameraID = 0;
+    /**相机实体*/
+    private Camera mCamera;
+    private int cameraID;
 
-    private SurfaceTexture mTexture;
-    private boolean isPreview;
-
-    private Camera.Size mPicSize;
-    private Camera.Size mPreSize;
-
+    /**相机的宽高及比例配置*/
     private Config mConfig;
+    /**预览的尺寸*/
+    private Camera.Size PreSize;
+    /**实际的尺寸*/
+    private Camera.Size PicSize;
+
+    private Point mPreSize ;
+    private Point mPicSize ;
 
     class Config {
         float rate; //宽高比
@@ -35,6 +39,7 @@ public class CameraEngine {
         int minPictureWidth;
     }
 
+    /**初始化一个默认的格式大小*/
     public CameraEngine() {
         this.mConfig = new Config();
         mConfig.minPreviewWidth = 720;
@@ -42,88 +47,89 @@ public class CameraEngine {
         mConfig.rate = 1.778f;//16:9
     }
 
-    public void openCamera() {
+    public void open() {
         if (mCamera == null) {
+            //默认打开后置摄像头
             try {
-                mCamera = Camera.open(cameraID);
-                setParameters();
-            }catch (Exception e) {
+                mCamera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException("打开摄像头失败", e);
+            }
 
+            Log.e(TAG, "open: camera end");
+            if (mCamera != null) {
+                setParameters();
+                this.cameraID = 1;
             }
         }
     }
 
-    public void openCamera(int cameraId) {
+    public void open(int cameraId) {
         if (mCamera == null) {
-            try {
-                mCamera = Camera.open(cameraId);
+            mCamera = Camera.open(cameraId);
+            if (mCamera != null) {
+                this.cameraID = cameraId;
                 setParameters();
-            }catch (Exception e) {
-
             }
         }
     }
 
+    /**选择当前设备允许的预览尺寸*/
     private void setParameters() {
-        Camera.Parameters param=mCamera.getParameters();
+        Camera.Parameters param = mCamera.getParameters();
+        PreSize = getPropPreviewSize(param.getSupportedPreviewSizes(), mConfig.rate, mConfig.minPreviewWidth);
+        param.setPreviewSize(PreSize.width, PreSize.height);
+        PicSize = getPropPictureSize(param.getSupportedPictureSizes(), mConfig.rate, mConfig.minPictureWidth);
+        param.setPictureSize(PicSize.width, PicSize.height);
 
-        //获取并设置符合参数的照片分辨率
-        mPicSize = getPropPictureSize(param.getSupportedPictureSizes(), mConfig.rate, mConfig.minPictureWidth);
-        param.setPictureSize(mPicSize.width, mPicSize.height);
-
-        //获取并设置符合参数的预览分辨率
-        mPreSize = getPropPreviewSize(param.getSupportedPreviewSizes(), mConfig.rate, mConfig.minPreviewWidth);
-        param.setPreviewSize(mPreSize.width, mPreSize.height);
+        param.setRotation(90);
 
         mCamera.setParameters(param);
-
-        Log.i(TAG, "openCamera: previewSize = " + mPreSize.width + mPreSize.height);
+        Camera.Size pre = param.getPreviewSize();
+        Camera.Size pic = param.getPictureSize();
+        mPicSize = new Point(pic.height, pic.width);
+        mPreSize = new Point(pre.height, pre.width);
+        Log.d(TAG, "openCamera: previewSize = " + pre.width + pic.height);
     }
 
-    public void stopCamera() {
+    public void close() {
         if (mCamera != null) {
             mCamera.setPreviewCallback(null);
-            stopPreview();
+            mCamera.stopPreview();
             mCamera.release();
             mCamera = null;
         }
     }
 
     public void switchCamera() {
-        stopCamera();
-        cameraID = cameraID == 0 ? 1: 0;
-        openCamera(cameraID);
-        startPreview(mTexture);
+        close();
+        cameraID = (cameraID == 0 ? 1: 0);
+        open(cameraID);
+        startPreview();
     }
 
     public Camera getCamera() {
         return mCamera;
     }
 
-    public void startPreview(SurfaceTexture mTexture) {
-        this.mTexture = mTexture;
-        if (mCamera != null && !isPreview) {
-            try {
-                mCamera.setPreviewTexture(mTexture);
-                mCamera.startPreview();
-                isPreview = true;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    public void startPreview() {
+        if(mCamera!=null){
+            mCamera.startPreview();
         }
     }
 
-    public void stopPreview() {
-        if (mCamera != null && isPreview) {
+    public void stopPreview(){
+        if(mCamera!=null) {
             mCamera.stopPreview();
-            isPreview = false;
         }
     }
 
     public void setPreviewTexture(SurfaceTexture texture){
-        if(mCamera!=null){
+        if(mCamera != null){
             try {
                 mCamera.setPreviewTexture(texture);
+                Log.d(TAG, "setPreviewTexture: ");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -134,35 +140,29 @@ public class CameraEngine {
         this.mConfig=config;
     }
 
-    public void startPreview() {
-        if(mCamera!=null){
-            mCamera.startPreview();
-        }
-    }
+//    public CameraInfo getCameraInfo() {
+//        if(mCamera != null) {
+//            Camera.Size size = mCamera.getParameters().getPreviewSize();
+//            CameraInfo cameraInfo = new CameraInfo();
+//            cameraInfo.previewWidth = size.width;
+//            cameraInfo.previewHeight = size.height;
+//            Camera.CameraInfo cameraInfo1 = new Camera.CameraInfo();
+//            Camera.getCameraInfo(cameraID, cameraInfo1);
+//            cameraInfo.orientation = cameraInfo1.orientation;
+//
+//            Camera.Size pictureSize = mCamera.getParameters().getPictureSize();
+//            cameraInfo.pictureWidth = pictureSize.width;
+//            cameraInfo.pictureHeight = pictureSize.height;
+//            return cameraInfo;
+//        }
+//        return null;
+//    }
 
-    public CameraInfo getCameraInfo() {
-        if(mCamera != null) {
-            Camera.Size size = mCamera.getParameters().getPreviewSize();
-            CameraInfo cameraInfo = new CameraInfo();
-            cameraInfo.previewWidth = size.width;
-            cameraInfo.previewHeight = size.height;
-            Camera.CameraInfo cameraInfo1 = new Camera.CameraInfo();
-            Camera.getCameraInfo(cameraID, cameraInfo1);
-            cameraInfo.orientation = cameraInfo1.orientation;
-
-            Camera.Size pictureSize = mCamera.getParameters().getPictureSize();
-            cameraInfo.pictureWidth = pictureSize.width;
-            cameraInfo.pictureHeight = pictureSize.height;
-            return cameraInfo;
-        }
-        return null;
-    }
-
-    public Camera.Size getPreviewSize() {
+    public Point getPreviewSize() {
         return mPreSize;
     }
 
-    public Camera.Size getPictureSize() {
+    public Point getPictureSize() {
         return mPicSize;
     }
 
@@ -232,8 +232,8 @@ public class CameraEngine {
         }
     }
 
-    //TODO 理解算法
-    private Comparator<Camera.Size> sizeComparator=new Comparator<Camera.Size>(){
+    //TODO 理解算法（Comparator类是用来排序的）
+    private static Comparator<Camera.Size> sizeComparator=new Comparator<Camera.Size>(){
         public int compare(Camera.Size lhs, Camera.Size rhs) {
             if(lhs.height == rhs.height){
                 return 0;
