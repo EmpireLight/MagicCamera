@@ -48,6 +48,7 @@ public class CameraEngine {
     }
 
     public void open() {
+        this.close();
         if (mCamera == null) {
             //默认打开后置摄像头
             try {
@@ -59,7 +60,7 @@ public class CameraEngine {
 
             Log.e(TAG, "open: camera end");
             if (mCamera != null) {
-                setParameters();
+                this.setParameters();
                 this.cameraID = 1;
             }
         }
@@ -70,7 +71,7 @@ public class CameraEngine {
             mCamera = Camera.open(cameraId);
             if (mCamera != null) {
                 this.cameraID = cameraId;
-                setParameters();
+                this.setParameters();
             }
         }
     }

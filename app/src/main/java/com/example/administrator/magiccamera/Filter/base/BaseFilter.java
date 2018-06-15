@@ -72,9 +72,8 @@ public class BaseFilter {
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
         rotateTexture();
-        //        /**默认将s纹理Y轴翻转*/
+        /**默认将s纹理Y轴翻转*/
 //        mTexBuffer.put(TextureRotationUtil.getRotation(Rotation.NORMAL, false, true)).position(0);
-
         mMVPMatrix = MatrixUtils.getOriginalMatrix();
     }
 
@@ -84,10 +83,10 @@ public class BaseFilter {
 
     private void getHandle() {
         if (mProgram != 0) {
-            mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram,"vMatrix");
-            mSampleTexHandle = GLES20.glGetUniformLocation(mProgram,"vTexture");
-            mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
-            mTextureCoordHandle = GLES20.glGetAttribLocation(mProgram, "vCoord");
+            mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram,"uMatrix");
+            mSampleTexHandle = GLES20.glGetUniformLocation(mProgram,"sTexture");
+            mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
+            mTextureCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTextureCoord");
         } else {
             throw new RuntimeException("failed creating program");
         }
@@ -107,11 +106,14 @@ public class BaseFilter {
         GLES20.glUniform1i(mSampleTexHandle, textureUnit);
     }
 
+    public void bindTexture(int textureID) {
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + textureUnit);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+        GLES20.glUniform1i(mSampleTexHandle, textureUnit);
+    }
+
     public void draw() {
         GLES20.glUseProgram(mProgram);
-
-//        /**默认4x4矩阵*/
-//        mMVPMatrix = MatrixUtils.getOriginalMatrix();
 
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle,1,false, mMVPMatrix,0);
 
@@ -151,6 +153,10 @@ public class BaseFilter {
     /**设置变换矩阵*/
     public final void setMVPMatrix(float[] mMVPMatrix){
         this.mMVPMatrix = mMVPMatrix;
+    }
+
+    public float[] getMVPMatrix(){
+        return mMVPMatrix;
     }
 
     public int getTextureID() {
