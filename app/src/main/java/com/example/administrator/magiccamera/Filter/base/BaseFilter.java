@@ -21,7 +21,7 @@ import java.nio.FloatBuffer;
  */
 
 public class BaseFilter {
-    Context context;
+    protected Context context;
 
     /**变换矩阵*/
     private float[] mMVPMatrix;
@@ -74,14 +74,12 @@ public class BaseFilter {
         rotateTexture();
         //        /**默认将s纹理Y轴翻转*/
 //        mTexBuffer.put(TextureRotationUtil.getRotation(Rotation.NORMAL, false, true)).position(0);
+
+        mMVPMatrix = MatrixUtils.getOriginalMatrix();
     }
 
-//    protected void rotateTexture() {
-//        mTexBuffer.put(TextureRotationUtil.TEXTURE_NO_ROTATION).position(0);
-//    }
-
     protected void rotateTexture() {
-        mTexBuffer.put(TextureRotationUtil.TEXTURE_ROTATED_90).position(0);
+        mTexBuffer.put(TextureRotationUtil.TEXTURE_NO_ROTATION).position(0);
     }
 
     private void getHandle() {
@@ -95,39 +93,25 @@ public class BaseFilter {
         }
     }
 
-//    protected void createProgram() {
-//        mProgram = OpenGlUtils.createProgram(
-//                OpenGlUtils.readShaderFromRawResource(context, R.raw.base_vertex),
-//                OpenGlUtils.readShaderFromRawResource(context, R.raw.base_fragment));
-//    }
-
     protected void createProgram() {
         mProgram = OpenGlUtils.createProgram(
-                OpenGlUtils.readShaderFromRawResource(context, R.raw.oes_base_vertex),
-                OpenGlUtils.readShaderFromRawResource(context, R.raw.oes_base_fragment));
+                OpenGlUtils.readShaderFromRawResource(context, R.raw.base_vertex),
+                OpenGlUtils.readShaderFromRawResource(context, R.raw.base_fragment));
     }
 
     protected void bindTexture() {
-        textureID = OpenGlUtils.loadExternalOESTextureID();
+        textureID = OpenGlUtils.loadNormalTextureID();
 
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureID);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + textureUnit);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
         GLES20.glUniform1i(mSampleTexHandle, textureUnit);
     }
-
-//    protected void bindTexture() {
-//        textureID = OpenGlUtils.loadNormalTextureID();
-//
-//        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + textureUnit);
-//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
-//        GLES20.glUniform1i(mSampleTexHandle, textureUnit);
-//    }
 
     public void draw() {
         GLES20.glUseProgram(mProgram);
 
-        /**默认4x4矩阵*/
-        mMVPMatrix = MatrixUtils.getOriginalMatrix();
+//        /**默认4x4矩阵*/
+//        mMVPMatrix = MatrixUtils.getOriginalMatrix();
 
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle,1,false, mMVPMatrix,0);
 

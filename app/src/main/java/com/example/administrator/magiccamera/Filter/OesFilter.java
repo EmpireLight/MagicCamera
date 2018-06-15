@@ -14,7 +14,6 @@ import com.example.administrator.magiccamera.utils.TextureRotationUtil;
  */
 
 public class OesFilter extends BaseFilter{
-    Context context;
 
     public OesFilter(Context context) {
         super(context);

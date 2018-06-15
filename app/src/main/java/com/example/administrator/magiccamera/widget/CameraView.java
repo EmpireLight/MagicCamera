@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 
 import com.example.administrator.magiccamera.Filter.OesFilter;
+import com.example.administrator.magiccamera.Filter.base.BaseFilter;
 import com.example.administrator.magiccamera.camera.CameraEngine;
 import com.example.administrator.magiccamera.drawer.CameraDrawer;
 
@@ -24,6 +25,9 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
     private CameraEngine mCamera;
 
     private OesFilter oesFilter;
+    private BaseFilter baseFilter;
+
+    CameraDrawer cameraDrawer;
 
     SurfaceTexture mSurface;
     int mTextureID = -1;
@@ -76,7 +80,7 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
 
         float[] mtx = new float[16];
         mSurface.getTransformMatrix(mtx);
-        oesFilter.setMVPMatrix(mtx);
+        //baseFilter.setMVPMatrix(mtx);
         oesFilter.draw();
 
 //        mCameraDrawer.draw(mtx);
