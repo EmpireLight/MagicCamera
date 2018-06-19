@@ -21,7 +21,7 @@ public class CameraEngine {
 
     /**相机实体*/
     private Camera mCamera;
-    private int cameraID;
+    public int cameraID;
 
     /**相机的宽高及比例配置*/
     private Config mConfig;
@@ -58,10 +58,9 @@ public class CameraEngine {
                 throw new RuntimeException("打开摄像头失败", e);
             }
 
-            Log.e(TAG, "open: camera end");
             if (mCamera != null) {
                 this.setParameters();
-                this.cameraID = 1;
+                this.cameraID = Camera.CameraInfo.CAMERA_FACING_BACK;
             }
         }
     }
@@ -83,8 +82,6 @@ public class CameraEngine {
         param.setPreviewSize(PreSize.width, PreSize.height);
         PicSize = getPropPictureSize(param.getSupportedPictureSizes(), mConfig.rate, mConfig.minPictureWidth);
         param.setPictureSize(PicSize.width, PicSize.height);
-
-        param.setRotation(90);
 
         mCamera.setParameters(param);
         Camera.Size pre = param.getPreviewSize();

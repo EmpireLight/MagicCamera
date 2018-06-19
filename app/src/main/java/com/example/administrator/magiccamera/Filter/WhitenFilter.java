@@ -9,14 +9,14 @@ import com.example.administrator.magiccamera.Filter.base.BaseFilter;
  * Created by Administrator on 2018/6/11 0011.
  */
 
-public class WhitenFilter extends BaseFilter {
+public class WhitenFilter {
 
-    WhitenFilter(Context context) {
-        super(context);
-    }
-
-    @Override
-    protected void onSizeChanged(int width, int height) {
-
-    }
+//    WhitenFilter(Context context) {
+//        super(context);
+//    }
+//
+//    @Override
+//    protected void onSizeChanged(int width, int height) {
+//
+//    }
 }

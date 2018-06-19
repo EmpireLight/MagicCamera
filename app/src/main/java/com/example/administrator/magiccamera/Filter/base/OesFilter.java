@@ -1,4 +1,4 @@
-package com.example.administrator.magiccamera.Filter;
+package com.example.administrator.magiccamera.Filter.base;
 
 import android.content.Context;
 import android.opengl.GLES11Ext;
@@ -14,27 +14,20 @@ import com.example.administrator.magiccamera.utils.TextureRotationUtil;
  */
 
 public class OesFilter extends BaseFilter{
-
     public OesFilter(Context context) {
         super(context);
+
+        super.setTextureID(OpenGlUtils.loadExternalOESTextureID());
     }
 
-//    @Override
-//    protected void rotateTexture() {
-//        super.mTexBuffer.put(TextureRotationUtil.TEXTURE_ROTATED_90).position(0);
-//    }
-
     @Override
-    protected void createProgram() {
+    public void createProgram() {
         super.mProgram = OpenGlUtils.createProgram(
                 OpenGlUtils.readShaderFromRawResource(super.context, R.raw.oes_base_vertex),
                 OpenGlUtils.readShaderFromRawResource(super.context, R.raw.oes_base_fragment));
     }
 
-    @Override
-    protected void bindTexture() {
-        textureID = OpenGlUtils.loadExternalOESTextureID();
-
+    public void onBindTexture() {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, super.textureID);
         GLES20.glUniform1i(super.mSampleTexHandle, super.textureUnit);
@@ -43,5 +36,11 @@ public class OesFilter extends BaseFilter{
     @Override
     protected void onSizeChanged(int width, int height) {
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        GLES20.glDeleteTextures(1, new int[]{super.getTextureID()},0);
     }
 }

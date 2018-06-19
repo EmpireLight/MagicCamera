@@ -5,7 +5,7 @@ import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 
-import com.example.administrator.magiccamera.Filter.OesFilter;
+import com.example.administrator.magiccamera.Filter.base.OesFilter;
 import com.example.administrator.magiccamera.R;
 import com.example.administrator.magiccamera.utils.MatrixUtils;
 import com.example.administrator.magiccamera.utils.OpenGlUtils;

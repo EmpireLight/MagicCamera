@@ -9,16 +9,21 @@ import com.example.administrator.magiccamera.Filter.base.BaseFilter;
  * Created by Administrator on 2018/6/11 0011.
  */
 
-public class BuffingFilter extends BaseFilter {
+public class BuffingFilter {
     Context context;
 
     BuffingFilter(Context context) {
-        super(context);
+        //super(context);
         this.context = context;
     }
-
-    @Override
-    protected void onSizeChanged(int width, int height) {
-
-    }
+//
+//    @Override
+//    protected void bindTexture() {
+//
+//    }
+//
+//    @Override
+//    protected void onSizeChanged(int width, int height) {
+//
+//    }
 }

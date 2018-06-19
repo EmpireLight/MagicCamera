@@ -20,7 +20,7 @@ import java.nio.FloatBuffer;
  * Created by Administrator on 2018/6/11 0011.
  */
 
-public class BaseFilter {
+public abstract class BaseFilter {
     protected Context context;
 
     /**变换矩阵*/
@@ -45,7 +45,7 @@ public class BaseFilter {
     /**默认使用纹理单元0*/
     protected int textureUnit = 0;
     /**默认使用纹理对象0*/
-    protected int textureID = 0;
+    int textureID = 0;
 
     // number of coordinates per vertex in this array(x,y)
     private static final int COORDS_PER_VERTEX = 2;
@@ -53,11 +53,9 @@ public class BaseFilter {
 
     public BaseFilter(Context context) {
         this.context = context;
-
         initBuffer();
         createProgram();
         getHandle();
-        bindTexture();
     }
 
     private void initBuffer() {
@@ -71,17 +69,13 @@ public class BaseFilter {
         mTexBuffer = ByteBuffer.allocateDirect(TextureRotationUtil.TEXTURE_NO_ROTATION.length * 4)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        rotateTexture();
+        mTexBuffer.put(TextureRotationUtil.TEXTURE_NO_ROTATION).position(0);
         /**默认将s纹理Y轴翻转*/
 //        mTexBuffer.put(TextureRotationUtil.getRotation(Rotation.NORMAL, false, true)).position(0);
         mMVPMatrix = MatrixUtils.getOriginalMatrix();
     }
 
-    protected void rotateTexture() {
-        mTexBuffer.put(TextureRotationUtil.TEXTURE_NO_ROTATION).position(0);
-    }
-
-    private void getHandle() {
+    protected void getHandle() {
         if (mProgram != 0) {
             mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram,"uMatrix");
             mSampleTexHandle = GLES20.glGetUniformLocation(mProgram,"sTexture");
@@ -92,28 +86,18 @@ public class BaseFilter {
         }
     }
 
-    protected void createProgram() {
-        mProgram = OpenGlUtils.createProgram(
-                OpenGlUtils.readShaderFromRawResource(context, R.raw.base_vertex),
-                OpenGlUtils.readShaderFromRawResource(context, R.raw.base_fragment));
-    }
+    protected abstract void createProgram();
 
-    protected void bindTexture() {
-        textureID = OpenGlUtils.loadNormalTextureID();
-
+    protected void onBindTexture(){
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + textureUnit);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
-        GLES20.glUniform1i(mSampleTexHandle, textureUnit);
-    }
-
-    public void bindTexture(int textureID) {
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + textureUnit);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, getTextureID());
         GLES20.glUniform1i(mSampleTexHandle, textureUnit);
     }
 
     public void draw() {
         GLES20.glUseProgram(mProgram);
+
+        onBindTexture();
 
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle,1,false, mMVPMatrix,0);
 
@@ -133,15 +117,8 @@ public class BaseFilter {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
     }
 
-    public final void destroy() {
-        int[] textures = new int[1];
-        textures[0] = textureID;
-
+    public void onDestroy() {
         GLES20.glDeleteProgram(mProgram);
-        GLES20.glDeleteTextures(1, textures,0);
-    }
-
-    protected void onDestroy() {
     }
 
     protected void onSizeChanged(int width, int height) {
