@@ -104,9 +104,10 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
         MatrixUtils.rotate(Matrix, 90);
         showFilter.setMVPMatrix(Matrix);
 
-        Matrix = Arrays.copyOf(waterMarkFilter.getMVPMatrix(), waterMarkFilter.getMVPMatrix().length);
-        MatrixUtils.rotate(Matrix, 90);
-        waterMarkFilter.setMVPMatrix(Matrix);
+//        Matrix = Arrays.copyOf(waterMarkFilter.getMVPMatrix(), waterMarkFilter.getMVPMatrix().length);
+//        //MatrixUtils.flip(Matrix, true, false);
+//        MatrixUtils.rotate(Matrix, 0);
+//        waterMarkFilter.setMVPMatrix(Matrix);
     }
 
     @Override
@@ -129,21 +130,21 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer,
         mSurfaceTexture.updateTexImage();
 
         fbo1.bind();
-        oesFilter.draw();////将纹理输出到FB12纹理
-        fbo1.unbind();
+        oesFilter.draw();//将纹理输出到FB12纹理
 
-
-        fbo2.bind();//将纹理输出到FBO2纹理
-//        grayFilter.setTextureID(fbo1.getFrameBufferTextureId());//将FBO1的输出纹理作为输入纹理
-//        grayFilter.draw();
-
+        //fbo2.bind();//将纹理输出到FBO2纹理
         waterMarkFilter.draw();
-
-        fbo2.unbind();
+        fbo1.unbind();
+        //fbo2.unbind();
 
         GLES20.glViewport(0,0,viewWidth,viewHeight);
 
-        showFilter.setTextureID(fbo2.getFrameBufferTextureId());
+//        fbo1.bind();
+//        grayFilter.setTextureID(fbo2.getFrameBufferTextureId());//将FBO1的输出纹理作为输入纹理
+//        grayFilter.draw();
+//        fbo1.unbind();
+
+        showFilter.setTextureID(fbo1.getFrameBufferTextureId());
         showFilter.draw();
     }
 
